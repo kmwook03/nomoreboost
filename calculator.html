@@ -9,6 +9,21 @@
 <body>
     <h1 class="center">Caffeine Calculator</h1>
     <p class="center"><strong>카페인 과다복용은 건강에 문제를 초래할 수 있으니 주의 바랍니다.</strong></p>
+    <div>
+        <p id="age"></p>
+    </div>
     
+    <div>
+        <p id="weight"></p>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const age = urlParams.get('user-age');
+        const weight = urlParams.get('user-weight');
+
+        document.getElementById('age').textContent = age;
+        document.getElementById('weight').textContent = weight;
+    </script>
 </body>
 </html>
