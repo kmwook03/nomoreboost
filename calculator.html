@@ -28,17 +28,13 @@
         <p>카페인 섭취 현황</p>
         <form id="drinkForm">
             <label for="drink">음료</label>
-            <select class="drink" name="drink">
+            <select id="drink" name="drink">
                 <option value="0">에너지 드링크(용량)</option>
                 <option value="62.5">레드불(250ml)</option>
                 <option value="100">몬스터 에너지(355ml)</option>
                 <option value="60">핫식스(250ml)</option>
                 <option value="70">핫식스 제로(250ml)</option>
                 <option value="100">핫식스 더 킹(355ml)</option>
-            </select>
-            <button type="submit">추가</button>
-
-            <select class="drink" name="coffee">
                 <option value="0">커피(브랜드, 사이즈)</option>
                 <option value="150">아메리카노(스타벅스, T)</option>
                 <option value="75">카페 라떼(스타벅스, T)</option>
@@ -61,6 +57,7 @@
         const age = urlParams.get('user-age');
         const weight = urlParams.get('user-weight');
         const pregnancy = urlParams.get('pregnancy');
+        var recommendedCaffeine = 0
         
         if (!age || !weight || isNaN(age) || isNaN(weight) || age <= 0 || weight <= 0) {
             alert("올바른 값을 입력하세요. (숫자만 입력하고 0보다 큰 값 입력)");
@@ -68,16 +65,15 @@
         } else {
             document.getElementById('age').textContent = `나이 : ${age} 살`;
             document.getElementById('weight').textContent = `체중 : ${weight} kg`;
-            // const recommendedCaffeine = 0;
             if (age < 19) {
-                const recommendedCaffeine = (2.5 * weight).toFixed(0);
+                recommendedCaffeine = (2.5 * weight).toFixed(0);
                 document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루`;
             } else if (pregnancy) {
-                const recommendedCaffeine = 300;
-                document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루 이하`;
+                recommendedCaffeine = 300;
+                document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루`;
             } else {
-                const recommendedCaffeine = 400;
-                document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루 이하`;
+                recommendedCaffeine = 400;
+                document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루`;
             }
         }
 
@@ -85,6 +81,7 @@
 
         function updateCaffeine() {
             document.getElementById('totalCaffeine').textContent = totalCaffeine.toFixed(1);
+            console.log(recommendedCaffeine, totalCaffeine);
         }
 
         function overCaffeine() {
@@ -96,17 +93,14 @@
         document.getElementById('drinkForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const selectDrink1 = parseFloat(document.getElementsByClassName('drink')[0].value);
-            const selectDrink2 = parseFloat(document.getElementsByClassName('drink')[1].value);
-            if (selectDrink1 > 0) {
-                totalCaffeine += selectDrink1;
+            const selectDrink = parseFloat(document.getElementById('drink').value);
+            if (selectDrink > 0) {
+                totalCaffeine += selectDrink;
                 updateCaffeine();
-            } else if (selectDrink2 > 0) {
-                totalCaffeine += selectDrink2;
-                updateCaffeine();
+                overCaffeine();
             }
-        updateCaffeine();
-        // overCaffeine();
+        // updateCaffeine();
+
         })
 
     </script>
