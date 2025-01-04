@@ -15,18 +15,16 @@
     <div>
         <p id="age"></p>
     </div>
-    
     <div>
         <p id="weight"></p>
     </div>
-
-    <div>
+    <div>    
         <p id="caffeine"></p>
     </div>
-
     <div>
         <p>카페인 섭취 현황</p>
         <form id="drinkForm">
+            
             <label for="drink">음료</label>
             <select id="drink" name="drink">
                 <option value="0">에너지 드링크(용량)</option>
@@ -35,7 +33,6 @@
                 <option value="60">핫식스(250ml)</option>
                 <option value="70">핫식스 제로(250ml)</option>
                 <option value="100">핫식스 더 킹(355ml)</option>
-                <option value="0">커피(브랜드, 사이즈)</option>
                 <option value="150">아메리카노(스타벅스, T)</option>
                 <option value="75">카페 라떼(스타벅스, T)</option>
                 <option value="75">카라멜 마끼아또(스타벅스, T)</option>
@@ -46,6 +43,12 @@
             </select>
             <button type="submit">추가</button>
         </form>
+    </div>
+        
+    </div>
+    <div class="record-section">
+        <h3>섭취한 음료 목록</h3>
+        <ul class="record-list" id="drinkRecords"></ul>
     </div>
 
     <div>
@@ -94,12 +97,23 @@
             event.preventDefault();
 
             const selectDrink = parseFloat(document.getElementById('drink').value);
+            const drinkName = document.getElementById('drink').options[document.getElementById('drink').selectedIndex].text;
             if (selectDrink > 0) {
                 totalCaffeine += selectDrink;
                 updateCaffeine();
                 overCaffeine();
+
+                const drinkRecords = document.getElementById('drinkRecords');
+                const recordItem = document.createElement('li');
+                // recordItem.textContent = `${drinkName} - ${selectDrink} mg`;
+                recordItem.innerHTML = `${drinkName} - ${selectDrink} mg <button class="remove-btn">x</button>`;
+                recordItem.querySelector('.remove-btn').addEventListener('click', function() {
+                    totalCaffeine -= selectDrink;
+                    updateCaffeine();
+                    recordItem.remove();
+                });
+                drinkRecords.appendChild(recordItem);
             }
-        // updateCaffeine();
 
         })
 
