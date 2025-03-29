@@ -25,14 +25,19 @@
         <p>카페인 섭취 현황</p>
         <form id="drinkForm">
             
-            <label for="drink">음료</label>
-            <select id="drink" name="drink">
+            <label for="energyDrink">에너지 드링크</label>
+            <select id="energyDrink" name="drink">
                 <option value="0">에너지 드링크(용량)</option>
                 <option value="62.5">레드불(250ml)</option>
                 <option value="100">몬스터 에너지(355ml)</option>
                 <option value="60">핫식스(250ml)</option>
                 <option value="70">핫식스 제로(250ml)</option>
                 <option value="100">핫식스 더 킹(355ml)</option>
+            </select>
+
+            <label for="coffee">커피</label>
+            <select id="coffee" name="coffee">
+                <option value="0">커피(사이즈)</option>
                 <option value="150">아메리카노(스타벅스, T)</option>
                 <option value="75">카페 라떼(스타벅스, T)</option>
                 <option value="75">카라멜 마끼아또(스타벅스, T)</option>
@@ -41,6 +46,7 @@
                 <option value="210">바닐라 빈 라떼(스타벅스, T)</option>
                 <option value="95">카페 모카(스타벅스, T)</option>
             </select>
+
             <button type="submit">추가</button>
         </form>
     </div>
@@ -54,6 +60,11 @@
     <div>
         <p>오늘의 카페인 누적 섭취량: <span id="totalCaffeine">0</span> mg</p>
     </div>
+
+    <script 
+    src="https://code.jquery.com/jquery-3.7.1.min.js" 
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" 
+    crossorigin="anonymous"></script>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -96,27 +107,77 @@
         document.getElementById('drinkForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const selectDrink = parseFloat(document.getElementById('drink').value);
-            const drinkName = document.getElementById('drink').options[document.getElementById('drink').selectedIndex].text;
-            if (selectDrink > 0) {
-                totalCaffeine += selectDrink;
+            const energyDrinkValue = parseFloat(document.getElementById('energyDrink').value);
+            const coffeeValue = parseFloat(document.getElementById('coffee').value);
+
+            let selectredValue = 0;
+            let drinkName = '';
+
+            if (energyDrinkValue > 0) {
+                selectedValue = energyDrinkValue;
+                drinkName = document.getElementById('energyDrink').options[document.getElementById('energyDrink').selectedIndex].text;
+            } else if (coffeeValue > 0) {
+                selectedValue = coffeeValue;
+                drinkName = document.getElementById('coffee').options[document.getElementById('coffee').selectedIndex].text;
+            }
+
+            if (selectedValue > 0) {
+                totalCaffeine += selectedValue;
                 updateCaffeine();
                 overCaffeine();
 
                 const drinkRecords = document.getElementById('drinkRecords');
-                const recordItem = document.createElement('li');
-                // recordItem.textContent = `${drinkName} - ${selectDrink} mg`;
-                recordItem.innerHTML = `${drinkName} - ${selectDrink} mg <button class="remove-btn">x</button>`;
-                recordItem.querySelector('.remove-btn').addEventListener('click', function() {
-                    totalCaffeine -= selectDrink;
-                    updateCaffeine();
-                    recordItem.remove();
-                });
-                drinkRecords.appendChild(recordItem);
-            }
+                const existingItem = Array.from(drinkRecords.children).find(item =>
+                    item.dataset.name === drinkName
+                );
 
-        })
+                if (existingItem) {
+                    const countSpan = existingItem.querySelector('.count');
+                    const count = parseInt(countSpan.textContent) + 1;
+                    countSpan.textContent = count;
+
+                    const caffeineSpan = existingItem.querySelector('.caffeine');
+                    const totalCaffeineForItem = parseFloat(caffeineSpan.dataset.value) + selectedValue;
+                    caffeineSpan.dataset.value = totalCaffeineForItem;
+                    caffeineSpan.textContent = `${totalCaffeineForItem.toFixed(1)}mg`;
+                } else {
+                    const recordItem = document.createElement('li');
+                    recordItem.dataset.name = drinkName;
+                    recordItem.innerHTML = `
+                        ${drinkName} - <span class="caffeine" data-value="${selectedValue}>${selectedValue.toFixed(1)}mg</span>
+                        (<span class="count">1</span>)
+                        <button class="remove-btn">x</button>
+                        `;
+                    recordItem.querySelector('.remove-btn').addEventListener('click', function() {
+                        const countSpan = recordItem.querySelector('count');
+                        const count = parseInt(countSpan.textContent);
+
+                        if (count > 1) {
+                            countSpan.textContent = count - 1;
+
+                            const caffeineSpan = recordItem.querySelector('.caffeine');
+                            const totalCaffeineForItem = parseFloat(caffeineSpan.dataset.value) - selectedValue;
+                            caffeineSpan.dataset.value = totalCaffeineForItem;
+                            caffeineSpan.textContent = `${totalCaffeineForItem.toFixed(1)}mg`;
+
+                            totalCaffeine -= selectedValue;
+                            updateCaffeine();
+                        } else {
+                            totalCaffeine -= selectedValue;
+                            updateCaffeine();
+                            recordItem.remove();
+                        }
+                    })
+                    drinkRecords.appendChild(recordItem);
+                }
+                document.getElementById('energyDrink').selectedIndex = 0;
+                document.getElementById('coffee').selectedIndex = 0;
+
+            }
+    })
 
     </script>
+
+    
 </body>
 </html>
