@@ -4,178 +4,229 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caffeine Calculator</title>
-    <link rel="stylesheet" href="mainstyle.css" />
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+        .center { text-align: center; }
+        .record-section { margin-top: 20px; }
+        .record-list li { margin-bottom: 8px; }
+        .remove-btn { margin-left: 10px; cursor: pointer; color: red; border: none; background: none;}
+    </style>
 </head>
 <body>
     <h1 class="center">Caffeine Calculator</h1>
 
     <p class="center"><strong>카페인 과다복용은 건강에 문제를 초래할 수 있으니 주의 바랍니다.</strong></p>
-    <p class="center">보편적인 성인 권장량</p>
-    <p class="center">성인: 400mg ↓, 임산부: 300mg ↓, 청소년: 체중 1kg 당 2.5mg ↓</p>
+    <p class="center">보편적인 성인 권장량<br>
+    성인: 400mg ↓, 임산부: 300mg ↓, 청소년: 체중 1kg 당 2.5mg ↓</p>
+    
     <div>
-        <p id="age"></p>
+        <p id="userInfo"></p>
+        <p id="caffeineRecommendation"></p>
     </div>
+
+    <hr>
+
     <div>
-        <p id="weight"></p>
-    </div>
-    <div>    
-        <p id="caffeine"></p>
-    </div>
-    <div>
-        <p>카페인 섭취 현황</p>
+        <p><strong>카페인 섭취 현황</strong></p>
         <form id="drinkForm">
-            
-            <label for="energyDrink">에너지 드링크</label>
-            <select id="energyDrink" name="drink">
-                <option value="0">에너지 드링크(용량)</option>
-                <option value="62.5">레드불(250ml)</option>
-                <option value="100">몬스터 에너지(355ml)</option>
-                <option value="60">핫식스(250ml)</option>
-                <option value="70">핫식스 제로(250ml)</option>
-                <option value="100">핫식스 더 킹(355ml)</option>
-            </select>
-
-            <label for="coffee">커피</label>
-            <select id="coffee" name="coffee">
-                <option value="0">커피(사이즈)</option>
-                <option value="150">아메리카노(스타벅스, T)</option>
-                <option value="75">카페 라떼(스타벅스, T)</option>
-                <option value="75">카라멜 마끼아또(스타벅스, T)</option>
-                <option value="75">카푸치노(스타벅스, T)</option>
-                <option value="150">돌체 라떼(스타벅스, T)</option>
-                <option value="210">바닐라 빈 라떼(스타벅스, T)</option>
-                <option value="95">카페 모카(스타벅스, T)</option>
-            </select>
-
+            <label for="drinkSelect">마신 음료를 선택하세요:</label>
+            <select id="drinkSelect" name="drink">
+                </select>
             <button type="submit">추가</button>
         </form>
+        <div class="center">
+            <canvas id="caffeineChart" width="200" height="200"></canvas>
+        </div>
     </div>
-        
-    </div>
+
     <div class="record-section">
         <h3>섭취한 음료 목록</h3>
         <ul class="record-list" id="drinkRecords"></ul>
     </div>
-
     <div>
-        <p>오늘의 카페인 누적 섭취량: <span id="totalCaffeine">0</span> mg</p>
+        <h3>오늘의 카페인 누적 섭취량: <span id="totalCaffeine">0</span> mg</h3>
+        <p id="caffeineWarning" style="color: red; font-weight: bold;"></p>
     </div>
 
     <script 
     src="https://code.jquery.com/jquery-3.7.1.min.js" 
     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" 
     crossorigin="anonymous"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const age = urlParams.get('user-age');
-        const weight = urlParams.get('user-weight');
-        const pregnancy = urlParams.get('pregnancy');
-        var recommendedCaffeine = 0
-        
-        if (!age || !weight || isNaN(age) || isNaN(weight) || age <= 0 || weight <= 0) {
-            alert("올바른 값을 입력하세요. (숫자만 입력하고 0보다 큰 값 입력)");
-            window.location.href = "index.html";
-        } else {
-            document.getElementById('age').textContent = `나이 : ${age} 살`;
-            document.getElementById('weight').textContent = `체중 : ${weight} kg`;
+        // 음료 정보 관리
+        const drinkData = {
+            "에너지 드링크": [
+                { name: "레드불 (250ml)", caffeine: 62.5 },
+                { name: "몬스터 에너지 (355ml)", caffeine: 100 },
+                { name: "핫식스 (250ml)", caffeine: 60 },
+                { name: "핫식스 제로 (250ml)", caffeine: 70 },
+                { name: "핫식스 더 킹 (355ml)", caffeine: 100 }
+            ],
+            "커피 (스타벅스 Tall 사이즈 기준)": [
+                { name: "아메리카노", caffeine: 150 },
+                { name: "카페 라떼", caffeine: 75 },
+                { name: "카라멜 마끼아또", caffeine: 75 },
+                { name: "카푸치노", caffeine: 75 },
+                { name: "돌체 라떼", caffeine: 150 },
+                { name: "바닐라 빈 라떼", caffeine: 210 },
+                { name: "카페 모카", caffeine: 95 }
+            ],
+            "기타": [
+                { name: "코카콜라 (355ml)", caffeine: 34 }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // URL에서 사용자 정보 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            const age = urlParams.get('user-age');
+            const weight = urlParams.get('user-weight');
+            const isPregnant = urlParams.get('pregnancy') === 'on';
+
+            // 권장량 계산 및 표시
+            let recommendedCaffeine = 0;
+            if (!age || !weight || isNaN(age) || isNaN(weight) || age <= 0 || weight <= 0) {
+                alert("올바른 나이와 체중을 입력해야 합니다. 초기 페이지로 돌아갑니다.");
+                window.location.href = "index.html"; // 사용자가 정보를 입력하는 페이지명
+                return;
+            }
+
+            document.getElementById('userInfo').textContent = `나이: ${age}세, 체중: ${weight}kg`;
             if (age < 19) {
                 recommendedCaffeine = (2.5 * weight).toFixed(0);
-                document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루`;
-            } else if (pregnancy) {
+            } else if (isPregnant) {
                 recommendedCaffeine = 300;
-                document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루`;
             } else {
                 recommendedCaffeine = 400;
-                document.getElementById('caffeine').textContent = `권장량 : ${recommendedCaffeine} mg ↓/ 하루`;
             }
-        }
+            document.getElementById('caffeineRecommendation').textContent = `하루 권장 섭취량: ${recommendedCaffeine}mg`;
+            
+            // 데이터 기반으로 드롭다운 메뉴 생성
+            const drinkSelect = document.getElementById('drinkSelect');
+            drinkSelect.innerHTML = '<option value="">-- 음료를 선택 --</option>'; // 기본 옵션
 
-        let totalCaffeine = 0;
-
-        function updateCaffeine() {
-            document.getElementById('totalCaffeine').textContent = totalCaffeine.toFixed(1);
-            console.log(recommendedCaffeine, totalCaffeine);
-        }
-
-        function overCaffeine() {
-            if (totalCaffeine > recommendedCaffeine) {
-                alert('하루 카페인 권장량을 초과했습니다! 내일 드세요!');
-            }
-        }
-
-        document.getElementById('drinkForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const energyDrinkValue = parseFloat(document.getElementById('energyDrink').value);
-            const coffeeValue = parseFloat(document.getElementById('coffee').value);
-
-            let selectredValue = 0;
-            let drinkName = '';
-
-            if (energyDrinkValue > 0) {
-                selectedValue = energyDrinkValue;
-                drinkName = document.getElementById('energyDrink').options[document.getElementById('energyDrink').selectedIndex].text;
-            } else if (coffeeValue > 0) {
-                selectedValue = coffeeValue;
-                drinkName = document.getElementById('coffee').options[document.getElementById('coffee').selectedIndex].text;
+            for (const category in drinkData) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = category;
+                drinkData[category].forEach(drink => {
+                    const option = document.createElement('option');
+                    option.value = drink.caffeine;
+                    option.textContent = drink.name;
+                    option.dataset.name = drink.name; // 이름도 데이터로 저장
+                    optgroup.appendChild(option);
+                });
+                drinkSelect.appendChild(optgroup);
             }
 
-            if (selectedValue > 0) {
-                totalCaffeine += selectedValue;
-                updateCaffeine();
-                overCaffeine();
+            const caffeineChartCanvas = document.getElementById('caffeineChart').getContext('2d');
+            let caffeineChart = new Chart(caffeineChartCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['섭취', '남음'],
+                    datasets: [{
+                        data: [0, recommendedCaffeine],
+                        backgroundColor: ['rgba(255, 99, 132, 0.8)', 'rgba(200, 200, 200, 0.8)'],
+                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(200, 200, 200, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed.toFixed(1)}mg`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            let totalCaffeine = 0;
+            const drinkForm = document.getElementById('drinkForm');
+            const drinkRecords = document.getElementById('drinkRecords');
+            const totalCaffeineSpan = document.getElementById('totalCaffeine');
+            const caffeineWarning = document.getElementById('caffeineWarning');
 
-                const drinkRecords = document.getElementById('drinkRecords');
-                const existingItem = Array.from(drinkRecords.children).find(item =>
-                    item.dataset.name === drinkName
-                );
+            // 총 카페인 업데이트 및 경고 함수
+            function updateCaffeineDisplay() {
+                totalCaffeineSpan.textContent = totalCaffeine.toFixed(1);
+                if (totalCaffeine > recommendedCaffeine) {
+                    caffeineWarning.textContent = '경고: 하루 권장량을 초과했습니다!';
+                } else {
+                    caffeineWarning.textContent = '';
+                }
+            }
+
+            // 음료 추가 이벤트
+            drinkForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const selectedOption = drinkSelect.options[drinkSelect.selectedIndex];
+                const caffeineValue = parseFloat(selectedOption.value);
+                const drinkName = selectedOption.dataset.name;
+
+                if (!caffeineValue) {
+                    alert("음료를 선택해주세요.");
+                    return;
+                }
+
+                totalCaffeine += caffeineValue;
+                updateCaffeineDisplay();
+
+                // 이미 목록에 있는지 확인
+                const existingItem = document.querySelector(`li[data-name="${drinkName}"]`);
 
                 if (existingItem) {
+                    // 있으면 수량 및 카페인 값 증가
                     const countSpan = existingItem.querySelector('.count');
-                    const count = parseInt(countSpan.textContent) + 1;
-                    countSpan.textContent = count;
-
-                    const caffeineSpan = existingItem.querySelector('.caffeine');
-                    const totalCaffeineForItem = parseFloat(caffeineSpan.dataset.value) + selectedValue;
-                    caffeineSpan.dataset.value = totalCaffeineForItem;
-                    caffeineSpan.textContent = `${totalCaffeineForItem.toFixed(1)}mg`;
+                    const currentCount = parseInt(countSpan.textContent);
+                    countSpan.textContent = currentCount + 1;
                 } else {
-                    const recordItem = document.createElement('li');
-                    recordItem.dataset.name = drinkName;
-                    recordItem.innerHTML = `
-                        ${drinkName} - <span class="caffeine" data-value="${selectedValue}>${selectedValue.toFixed(1)}mg</span>
-                        (<span class="count">1</span>)
+                    // 없으면 새로 추가
+                    const li = document.createElement('li');
+                    li.dataset.name = drinkName;
+                    li.dataset.caffeine = caffeineValue; // 개당 카페인 값 저장 (오류 수정)
+                    
+                    li.innerHTML = `
+                        ${drinkName} - ${caffeineValue.toFixed(1)}mg 
+                        (<span class="count">1</span>잔)
                         <button class="remove-btn">x</button>
-                        `;
-                    recordItem.querySelector('.remove-btn').addEventListener('click', function() {
-                        const countSpan = recordItem.querySelector('count');
-                        const count = parseInt(countSpan.textContent);
-
-                        if (count > 1) {
-                            countSpan.textContent = count - 1;
-
-                            const caffeineSpan = recordItem.querySelector('.caffeine');
-                            const totalCaffeineForItem = parseFloat(caffeineSpan.dataset.value) - selectedValue;
-                            caffeineSpan.dataset.value = totalCaffeineForItem;
-                            caffeineSpan.textContent = `${totalCaffeineForItem.toFixed(1)}mg`;
-
-                            totalCaffeine -= selectedValue;
-                            updateCaffeine();
-                        } else {
-                            totalCaffeine -= selectedValue;
-                            updateCaffeine();
-                            recordItem.remove();
-                        }
-                    })
-                    drinkRecords.appendChild(recordItem);
+                    `;
+                    drinkRecords.appendChild(li);
                 }
-                document.getElementById('energyDrink').selectedIndex = 0;
-                document.getElementById('coffee').selectedIndex = 0;
+                 // 선택 초기화
+                drinkSelect.selectedIndex = 0;
+            });
 
-            }
-    })
+            // 음료 제거 이벤트 (이벤트 위임 사용)
+            drinkRecords.addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-btn')) {
+                    const li = event.target.parentElement;
+                    const caffeineValue = parseFloat(li.dataset.caffeine);
+                    const countSpan = li.querySelector('.count');
+                    let count = parseInt(countSpan.textContent);
 
+                    totalCaffeine -= caffeineValue;
+                    
+                    if (count > 1) {
+                        countSpan.textContent = count - 1;
+                    } else {
+                        li.remove();
+                    }
+                    
+                    updateCaffeineDisplay();
+                }
+            });
+        });
     </script>
 
     
