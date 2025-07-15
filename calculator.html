@@ -22,21 +22,24 @@
 
     <div>
         <p><strong>카페인 섭취 현황</strong></p>
-        <form id="drinkForm">
-            <label for="drinkSelect">마신 음료를 선택하세요:</label>
-            <select id="drinkSelect" name="drink">
-                </select>
-            <button type="submit">추가</button>
-        </form>
-        <div class="center">
-            <canvas id="caffeineChart" width="200" height="200"></canvas>
+        <div class="caffeine-flex-row">
+            <div class="left-col">
+                <form id="drinkForm">
+                    <label for="drinkSelect">마신 음료를 선택하세요:</label>
+                    <select id="drinkSelect" name="drink"></select>
+                    <button type="submit">추가</button>
+                </form>
+                <div class="record-section">
+                    <h3>섭취한 음료 목록</h3>
+                    <ul class="record-list" id="drinkRecords"></ul>
+                </div>
+            </div>
+            <div class="center">
+                <canvas id="caffeineChart" width="200" height="200"></canvas>
+            </div>
         </div>
     </div>
 
-    <div class="record-section">
-        <h3>섭취한 음료 목록</h3>
-        <ul class="record-list" id="drinkRecords"></ul>
-    </div>
     <div>
         <h3>오늘의 카페인 누적 섭취량: <span id="totalCaffeine">0</span> mg</h3>
         <p id="caffeineWarning" style="color: red; font-weight: bold;"></p>
@@ -120,8 +123,8 @@
                     labels: ['섭취', '남음'],
                     datasets: [{
                         data: [0, recommendedCaffeine],
-                        backgroundColor: ['rgba(255, 99, 132, 0.8)', 'rgba(200, 200, 200, 0.8)'],
-                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(200, 200, 200, 1)'],
+                        backgroundColor: ['#a67b5b', '#f5f5dc'],
+                        borderColor: ['#6f4e37', '#d2b48c'],
                         borderWidth: 1
                     }]
                 },

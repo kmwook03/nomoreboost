@@ -89,11 +89,20 @@ strong {
     width: 30%;
     height: auto;
     background-color: #f9f9f9;
+    min-width: 350px;
+    background: #fff8e7;
+    border-radius: 12px;
+    padding: 16px 10px;
+    margin: 0 8px;
+    box-shadow: 0 2px 8px rgba(111, 78, 55, 0.06);
 }
+
 .record-list {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
+
 .record-list li {
     margin: 5px 0;
 }
@@ -106,4 +115,29 @@ strong {
     cursor: pointer;
     font-size: 14px;
     border-radius: 3px;
+}
+
+.caffeine-flex-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 32px;
+    margin: 24px 0;
+}
+
+.left-col {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 260px;
+    gap: 18px;
+}
+
+.caffeine-flex-row form {
+    min-width: 220px;
+    margin: 0;
+}
+
+.caffeine-flex-row .center {
+    margin: 0;
 }
