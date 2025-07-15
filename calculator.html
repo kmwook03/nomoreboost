@@ -164,6 +164,10 @@
                 } else {
                     caffeineWarning.textContent = '';
                 }
+                // 차트 데이터 업데이트
+                caffeineChart.data.datasets[0].data[0] = totalCaffeine;
+                caffeineChart.data.datasets[0].data[1] = Math.max(recommendedCaffeine - totalCaffeine, 0);
+                caffeineChart.update();
             }
 
             // 음료 추가 이벤트
